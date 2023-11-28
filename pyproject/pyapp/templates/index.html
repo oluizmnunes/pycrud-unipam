@@ -1,0 +1,234 @@
+<!-- myapp/templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pyCRUD - UNIPAM</title>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+        }
+
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        h1 {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>pyCRUD - UNIPAM</h1>
+
+    <button id="createDataButton">CREATE DATA</button>
+    <button id="updateDataButton">UPDATE DATA</button>
+    <button id="removeDataButton">REMOVE DATA</button>
+    <button id="listDataButton">LIST DATA</button>
+
+
+    <script>
+        document.getElementById('createDataButton').addEventListener('click', function () {
+            const modalContainer = document.createElement('div');
+            modalContainer.style.display = 'flex';
+            modalContainer.style.flexDirection = 'column';
+            modalContainer.style.position = 'fixed';
+            modalContainer.style.top = '50%';
+            modalContainer.style.left = '50%';
+            modalContainer.style.transform = 'translate(-50%, -50%)';
+            modalContainer.style.background = 'white';
+            modalContainer.style.padding = '20px';
+            modalContainer.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
+            modalContainer.style.zIndex = '1000';
+            modalContainer.style.width = '400px';
+
+            const fullNameInput = document.createElement('input');
+            fullNameInput.setAttribute('type', 'text');
+            fullNameInput.setAttribute('placeholder', 'Full name');
+
+            const emailInput = document.createElement('input');
+            emailInput.setAttribute('type', 'text');
+            emailInput.setAttribute('placeholder', 'Email');
+
+            const phoneNumberInput = document.createElement('input');
+            phoneNumberInput.setAttribute('type', 'text');
+            phoneNumberInput.setAttribute('placeholder', 'Phone number');
+
+            const bankBalanceInput = document.createElement('input');
+            bankBalanceInput.setAttribute('type', 'text');
+            bankBalanceInput.setAttribute('placeholder', 'Bank balance');
+
+            const isStudentLabel = document.createElement('label');
+            isStudentLabel.textContent = 'Are you a student?';
+
+            const isStudentRadioYes = document.createElement('input');
+            isStudentRadioYes.setAttribute('type', 'radio');
+            isStudentRadioYes.setAttribute('name', 'isStudent');
+            isStudentRadioYes.setAttribute('value', 'true');
+            const isStudentLabelYes = document.createElement('span');
+            isStudentLabelYes.textContent = 'Yes';
+            isStudentLabelYes.appendChild(isStudentRadioYes);
+
+            const isStudentRadioNo = document.createElement('input');
+            isStudentRadioNo.setAttribute('type', 'radio');
+            isStudentRadioNo.setAttribute('name', 'isStudent');
+            isStudentRadioNo.setAttribute('value', 'false');
+            const isStudentLabelNo = document.createElement('span');
+            isStudentLabelNo.textContent = 'No';
+            isStudentLabelNo.appendChild(isStudentRadioNo);
+
+            const okButton = document.createElement('button');
+            okButton.textContent = 'OK';
+
+            okButton.addEventListener('click', function () {
+                const fullName = fullNameInput.value;
+                const email = emailInput.value;
+                const phoneNumber = phoneNumberInput.value;
+                const bankBalance = bankBalanceInput.value;
+                const isStudent = isStudentRadioYes.checked;
+                document.body.removeChild(modalContainer);
+
+                fetch('/create_data/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        fullName: fullName,
+                        email: email,
+                        phoneNumber: phoneNumber,
+                        bankBalance: bankBalance,
+                        isStudent: isStudent,
+                    }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Handle the response (success or failure) as needed
+                        console.log(data);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        window.alert('An error occurred. Please try again.');
+                    });
+            });
+
+            // Add elements to modal container
+            modalContainer.appendChild(fullNameInput);
+            modalContainer.appendChild(emailInput);
+            modalContainer.appendChild(phoneNumberInput);
+            modalContainer.appendChild(bankBalanceInput);
+            modalContainer.appendChild(isStudentLabel);
+            modalContainer.appendChild(isStudentLabelYes);
+            modalContainer.appendChild(isStudentLabelNo);
+            modalContainer.appendChild(okButton);
+
+            document.body.appendChild(modalContainer);
+        });
+
+        document.getElementById('updateDataButton').addEventListener('click', function () {
+            // Assuming you have a function to prompt the user for the data to update
+            const fullNameToUpdate = prompt('Enter the full name to update:');
+
+            if (fullNameToUpdate !== null && fullNameToUpdate.trim() !== '') {
+                // Assuming you have a function to prompt the user for the updated data
+                const updatedFullName = prompt('Enter the updated full name:');
+                const updatedEmail = prompt('Enter the updated email:');
+                const updatedPhoneNumber = prompt('Enter the updated phone number:');
+                const updatedBankBalance = prompt('Enter the updated bank balance:');
+                const updatedIsStudent = confirm('Is the person a student?');
+
+                // Make an asynchronous request to the Django backend to update data
+                fetch(`/update_data/?fullNameToUpdate=${fullNameToUpdate}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        updatedFullName: updatedFullName,
+                        updatedEmail: updatedEmail,
+                        updatedPhoneNumber: updatedPhoneNumber,
+                        updatedBankBalance: updatedBankBalance,
+                        updatedIsStudent: updatedIsStudent,
+                    }),
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Handle the response (success or failure) as needed
+                        console.log(data);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        // Display an error message in case of a network error or invalid JSON response
+                        window.alert('An error occurred. Please try again.');
+                    });
+            }
+        });
+
+        document.getElementById('removeDataButton').addEventListener('click', function () {
+            const fullName = prompt('Enter the full name to remove:');
+
+            if (fullName !== null && fullName.trim() !== '') {
+                fetch(`/remove_data/?fullName=${fullName}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.message === 'Data removed successfully') {
+                            const removedData = data.removed_data;
+                            if (removedData && removedData.length > 0) {
+                                const formattedString = removedData.map(person => {
+                                    return `${person.person_id}, ${person.fullname}, ${person.email}, ${person.phonenumber}, ${person.bankbalance}, ${person.isstudent ? 'STUDENT' : 'NOT STUDENT'}`;
+                                }).join('\n');
+
+                                window.alert(`Data removed successfully!\n\nRemoved Records:\n${formattedString}`);
+                            } else {
+                                window.alert('Data removed successfully, but details not available.');
+                            }
+                        } else {
+                            window.alert('Failed to remove data. Please try again.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        window.alert('An error occurred. Please try again.');
+                    });
+            }
+        });
+
+
+        document.getElementById('listDataButton').addEventListener('click', function () {
+            console.log('LIST DATA button clicked!');
+
+            fetch('/list_data/')
+                .then(response => response.json())
+                .then(data => {
+                    const formattedString = data.map(person => {
+                        return `${person.person_id}, ${person.fullname}, ${person.email}, ${person.phonenumber}, ${person.bankbalance}, ${person.isstudent ? 'STUDENT' : 'NOT STUDENT'}`;
+                    }).join('\n');
+
+                    alert(formattedString);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+
+</body>
+
+</html>
